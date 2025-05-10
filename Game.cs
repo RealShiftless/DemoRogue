@@ -16,6 +16,7 @@ namespace DemoRogue
 {
     public sealed class Game : GameBase
     {
+        // This basically just stores the ascii values for the supported characters by the sprite font [A-Z0-9@]
         private byte[] _fontTextures = [
                 97,
                 98,
@@ -52,7 +53,8 @@ namespace DemoRogue
                 55,
                 56,
                 57,
-                48
+                48,
+                64
             ];
 
         private Dungeon _layer;
@@ -87,7 +89,6 @@ namespace DemoRogue
             Tileset.SetTextureOcupiedFlag(0, true);
             Tileset.LoadTextures(@"textures\font", _fontTextures);
             Dungeon.SetTileset(Tileset.LoadTextures(@"textures\walls"));
-
 
             _gameState.Initialize(this);
 
