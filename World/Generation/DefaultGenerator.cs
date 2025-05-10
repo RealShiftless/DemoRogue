@@ -185,7 +185,7 @@ namespace DemoRogue.World.Generation
 
                     for(int i = 0; i < 4; i++)
                     {
-                        if()
+                        //if()
                     }
                 }
             });
