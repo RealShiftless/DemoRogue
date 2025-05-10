@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Mathematics\**" />
+    <EmbeddedResource Remove="Mathematics\**" />
+    <None Remove="Mathematics\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="OpenTK" Version="4.9.4" />
   </ItemGroup>
 
@@ -20,10 +26,6 @@
     <None Update="assets\bin\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Mathematics\" />
   </ItemGroup>
 
 </Project>
