@@ -1,6 +1,3 @@
-# Unignore bin in assets
-!assets/bin/
-
 #############################
 # Build results
 #############################
@@ -8,6 +5,9 @@ bin/
 obj/
 [Ll]og/
 *.log
+
+# Unignore bin in assets
+!assets/bin/
 
 #############################
 # VS & IDE specific files
