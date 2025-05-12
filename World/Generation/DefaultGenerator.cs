@@ -1,6 +1,7 @@
 ﻿using DemoRogue.World.Building;
 using DemoRogue.World.Rooms;
 using Shiftless.Clockwork.Retro.Mathematics;
+using System.Diagnostics;
 
 namespace DemoRogue.World.Generation
 {
@@ -18,7 +19,7 @@ namespace DemoRogue.World.Generation
         public int MaxRoomHeight = 16;
 
         public float RoomPercentage = 0.6f;
-        public float PathPercentage = 0.9f;
+        public float PathPercentage = 0.2f;
 
         //private Random RNG = new();
 
@@ -123,7 +124,7 @@ namespace DemoRogue.World.Generation
             });
 
             // Now we validate all paths
-            //dungeon.ValidateAllPaths();
+            dungeon.ValidateAllPaths();
 
             /*
             // First generate the rooms

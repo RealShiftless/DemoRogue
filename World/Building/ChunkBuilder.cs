@@ -15,6 +15,7 @@ namespace DemoRogue.World.Building
         private RoomTypes? _roomType = null;
 
         private List<byte> _paths = [];
+        private List<Point8> _pathRooms = [];
 
         private bool _leadsToSource = false;
 
@@ -44,9 +45,11 @@ namespace DemoRogue.World.Building
             _roomBody = body;
             _roomType = type;
         }
-        internal void AddPath(byte pathIndex, bool leadsToSource = false)
+        internal void AddPath(byte pathIndex, Point8? destChunk = null, bool leadsToSource = false)
         {
             _paths.Add(pathIndex);
+            if(destChunk != null)
+                _pathRooms.Add(destChunk.Value);
             
             // If we are not already leading to the source (0,0) we set it to the leads to source bool given.
             // This way we can easily check if this chunk leads to the source
@@ -56,16 +59,22 @@ namespace DemoRogue.World.Building
 
         private void SetLeadsToSource()
         {
+            // Early return if we already lead to source
             if (_leadsToSource)
                 return;
 
+            // Set the leads to source value
             _leadsToSource = true;
+
+            // And update all the rooms this chunk points to.
+            foreach (Point8 destPos in _pathRooms)
+                Dungeon.GetChunk(destPos).SetLeadsToSource();
         }
 
 
         internal Chunk Build()
         {
-            Chunk chunk = new Chunk(Dungeon.Dungeon, RoomBody, RoomType, [.. _paths]);
+            Chunk chunk = new(Dungeon.Dungeon, RoomBody, RoomType, [.. _paths]);
             Reset();
 
             return chunk;
@@ -73,9 +82,12 @@ namespace DemoRogue.World.Building
 
         internal void Reset()
         {
+            _leadsToSource = false;
+
             _roomBody = null;
             _roomType = null;
             _paths.Clear();
+            _pathRooms.Clear();
         }
 
         /// <summary>

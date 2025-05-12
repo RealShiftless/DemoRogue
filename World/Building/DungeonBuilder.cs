@@ -103,6 +103,9 @@ namespace DemoRogue.World.Building
         }
         public void SetRoom(Point8 gridPosition, Rect8 localBody, RoomTypes type) => SetRoom(gridPosition.X, gridPosition.Y, localBody, type);
 
+        public ChunkBuilder GetChunk(int x, int y) => _chunks[x, y];
+        public ChunkBuilder GetChunk(Point8 position) => GetChunk(position.X, position.Y);
+
         private void CreatePath(ChunkBuilder sourceChunk, Point8 sourcePos, ChunkBuilder destChunk, Point8 destPos, Direction direction, int turnIndex)
         {
             // We create and add the path
@@ -118,8 +121,8 @@ namespace DemoRogue.World.Building
                 _chunks[curGridPos.X, curGridPos.Y].AddPath(pathId);
 
             // Finally we add the paths to the source and dest
-            sourceChunk.AddPath(pathId, destChunk.LeadsToSource);
-            destChunk.AddPath(pathId, sourceChunk.LeadsToSource);
+            sourceChunk.AddPath(pathId, destChunk.GridPosition, destChunk.LeadsToSource);
+            destChunk.AddPath(pathId, sourceChunk.GridPosition, sourceChunk.LeadsToSource);
         }
 
         public void CreatePath(Point8 sourcePos, Point8 destPos, Direction direction, int turnIndex)
