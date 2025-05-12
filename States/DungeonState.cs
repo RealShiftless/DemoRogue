@@ -21,6 +21,8 @@ namespace DemoRogue.States
 
         public const int ANIMATION_FRAMES = 4;
 
+        public const int MOVE_TICKS = 4;
+
 
         // Static values
         private static Vec2i _camOffset = new(-(Renderer.NATIVE_WIDTH / 2) + (Tileset.TILE_PIXEL_AREA / 2), -(Renderer.NATIVE_HEIGHT / 2) + (Tileset.TILE_PIXEL_AREA / 2));
@@ -40,6 +42,8 @@ namespace DemoRogue.States
         private int _curFloor = -1;
 
         private Point8 _curPlayerSector = new(0, 0);
+
+        private int _moveTimer;
 
 
         // State Func
@@ -92,23 +96,28 @@ namespace DemoRogue.States
         {
             Vec2i input = new(Game.Input.HorizontalI, Game.Input.VerticalI);
 
-            if (input != Vec2i.Zero && !_hasMoved)
+            if (input != Vec2i.Zero && _moveTimer == 0)
             {
                 Point8 nextPos = _playerPos + input;
 
-                if (!_dungeon.IsTileAir(nextPos))
+                if (!_dungeon.IsTileOpen(nextPos.X, _playerPos.Y) || !_dungeon.IsTileOpen(_playerPos.X, nextPos.Y) || !_dungeon.IsTileOpen(nextPos))
                     return;
 
                 if (MovePlayer(nextPos))
                 {
                     RefreshVisibleTiles();
                     Game.Tilemap.Refresh();
+
                 }
 
+                _moveTimer = MOVE_TICKS;
                 _hasMoved = true;
             }
-            else if(input == Vec2i.Zero)
-                _hasMoved = false;
+
+            if (input == Vec2i.Zero)
+                _moveTimer = 0;
+            else if (_moveTimer != 0)
+                _moveTimer--;
         }
 
 
@@ -143,7 +152,6 @@ namespace DemoRogue.States
                 Game.WriteString($"plr sec: {_curPlayerSector.X} {_curPlayerSector.Y}", 0, 1, 3);
                 return true;
             }
-
 
             return false;
         }

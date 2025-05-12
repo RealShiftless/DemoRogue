@@ -140,7 +140,7 @@ namespace DemoRogue.World
 
             return (_collisionMap[packedX, y] & (0b1 << shift)) != 0;
         }
-        public bool IsTileAir(Point8 p) => IsTileOpen(p.X, p.Y);
+        public bool IsTileOpen(Point8 p) => IsTileOpen(p.X, p.Y);
 
         private void SetTileCollisionFlag(int x, int y, bool value)
         {
