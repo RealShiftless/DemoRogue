@@ -60,19 +60,12 @@ namespace DemoRogue
                 64
             ];
 
-        private Dungeon _layer;
-
         private GameState _gameState;
 
         // Constructor
         public Game() : base(new() { WindowTitle = "Demo Rogue" })
         {
             _gameState = new DungeonState();
-
-            Debug.WriteLine(Marshal.SizeOf<Point8>());
-            Debug.WriteLine(Marshal.SizeOf<Vector2i>());
-
-            _layer = new Dungeon();
         }
 
 
@@ -81,8 +74,6 @@ namespace DemoRogue
         {
             Game program = new();
             program.Run();
-
-
         }
 
 
@@ -99,19 +90,6 @@ namespace DemoRogue
             Input.Down = Keys.Down;
             Input.Left = Keys.Left;
             Input.Right = Keys.Right;
-            /*
-            Stopwatch sw = Stopwatch.StartNew();
-            for(int y = 0; y < 9;  y++)
-            {
-                for(int x = 0; x < 15; x++)
-                {
-                    _layer.BuildSector(x, y, x * 4, y * 4, Tilemap);
-                }
-            }
-            sw.Stop();
-
-            Debug.WriteLine(sw.Elapsed.TotalNanoseconds);
-            */
 
             Renderer.SetPalette(PaletteIndex.Palette0, new(
                 new(),
