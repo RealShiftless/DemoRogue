@@ -18,8 +18,10 @@ namespace DemoRogue.World.Building
         private ChunkBuilder[,] _chunks = null!;
         private List<Path> _paths = [];
 
+        private List<Point8> _validSpawnChunks = [];
+
         private int _chunkTileWidth;
-        private int _gridTileHeight;
+        private int _chunkTileHeight;
 
         private int _maxRoomWidth;
         private int _maxRoomHeight;
@@ -32,6 +34,9 @@ namespace DemoRogue.World.Building
         public int MaxRoomWidth => _maxRoomWidth;
         public int MaxRoomHeight => _maxRoomHeight;
 
+        public int ChunkTileWidth => _chunkTileWidth;
+        public int ChunkTileHeight => _chunkTileHeight;
+
 
         // Indexer
         public ChunkBuilder this[int gridX, int gridY] => _chunks[gridX, gridY];
@@ -42,7 +47,7 @@ namespace DemoRogue.World.Building
         {
             Dungeon = dungeon;
 
-            SetGrid(gridWidth, gridHeight);
+            SetGridDirect(gridWidth, gridHeight);
         }
 
 
@@ -52,12 +57,16 @@ namespace DemoRogue.World.Building
             // Check if the size is exactly the same and do an early return to save processing n assigments
             if (GridWidth == width && GridHeight == height) return;
 
+            SetGridDirect(width, height);
+        }
+        private void SetGridDirect(int width, int height)
+        {
             // We create a new chunks array
             _chunks = new ChunkBuilder[width, height];
 
             // And we create some data for chunk usage
             _chunkTileWidth = Dungeon.WIDTH / width;
-            _gridTileHeight = Dungeon.HEIGHT / height;
+            _chunkTileHeight = Dungeon.HEIGHT / height;
 
             _maxRoomWidth = Dungeon.WIDTH / width - Dungeon.GRID_BORDER * 2;
             _maxRoomHeight = Dungeon.HEIGHT / height - Dungeon.GRID_BORDER * 2;
@@ -79,14 +88,18 @@ namespace DemoRogue.World.Building
         public void SetRoom(int gridX, int gridY, Rect8 localBody, RoomTypes type)
         {
             // First we check if the room already is created
-            if (_chunks[gridX, gridY] != null)
+            if (_chunks[gridX, gridY].ContainsRoom)
                 throw new InvalidOperationException($"Room at {gridX} {gridY} was already created!");
 
             // For ease of use we send a local body to this func, this means the body still has to be translated into world space :)
-            Rect8 body = localBody.Translate(gridX * _chunkTileWidth, gridY * _gridTileHeight);
+            Rect8 body = localBody.Translate(gridX * _chunkTileWidth, gridY * _chunkTileHeight);
 
             // And we set the actual room
             _chunks[gridX, gridY].SetRoom(body, type);
+
+            // Add the room as a spawn if it be one
+            if (type.IsValidSpawn())
+                _validSpawnChunks.Add(new(gridX, gridY));
         }
         public void SetRoom(Point8 gridPosition, Rect8 localBody, RoomTypes type) => SetRoom(gridPosition.X, gridPosition.Y, localBody, type);
 
@@ -105,7 +118,7 @@ namespace DemoRogue.World.Building
                 _chunks[curGridPos.X, curGridPos.Y].AddPath(pathId);
 
             // Finally we add the paths to the source and dest
-            sourceChunk.AddPath(pathId);
+            sourceChunk.AddPath(pathId, destChunk.LeadsToSource);
             destChunk.AddPath(pathId, sourceChunk.LeadsToSource);
         }
 
@@ -178,13 +191,50 @@ namespace DemoRogue.World.Building
 
         public void EnumerateGrid(GridEnumerationEventHandler action)
         {
-            for (int gridX = 0; gridX < _chunkTileWidth; gridX++)
+            for (int gridX = 0; gridX < GridWidth; gridX++)
             {
-                for (int gridY = 0; gridY < _gridTileHeight; gridY++)
+                for (int gridY = 0; gridY < GridHeight; gridY++)
                 {
                     action.Invoke(gridX, gridY);
                 }
             }
+        }
+
+        public void ValidateAllPaths()
+        {
+            EnumerateGrid((gridX, gridY) =>
+            {
+                // First we check if the chunk even contains a room
+                if (!_chunks[gridX, gridY].ContainsRoom)
+                    return;
+
+                // Now we check if it already leads to source
+                if (_chunks[gridX, gridY].LeadsToSource)
+                    return;
+
+                // Here we check if the chunk allows paths
+                if (!_chunks[gridX, gridY].RoomType.GetAllowsPaths())
+                    return;
+
+                if (gridX == 0)
+                    CreatePath(gridX, gridY, Direction.Down);
+                else
+                    CreatePath(gridX, gridY, Direction.Left);
+            });
+        }
+
+        internal (Chunk[,] chunks, Path[] paths, Point8[] spawnChunks) Build()
+        {
+            Chunk[,] chunks = new Chunk[GridWidth, GridHeight];
+            EnumerateGrid((gridX, gridY) => chunks[gridX, gridY] = _chunks[gridX, gridY].Build());
+
+            Path[] paths = _paths.ToArray();
+            Point8[] validSpawnChunks = _validSpawnChunks.ToArray();
+
+            _paths.Clear();
+            _validSpawnChunks.Clear();
+
+            return(chunks, paths, validSpawnChunks);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Shiftless.Clockwork.Retro.Mathematics;
+﻿using DemoRogue.World.Building;
+using Shiftless.Clockwork.Retro.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +15,6 @@ namespace DemoRogue.World
         int GridWidth { get; }
         int GridHeight { get; }
 
-        void Generate();
-
-        bool IsTileAir(Point8 point);
+        void Generate(DungeonBuilder dungeon);
     }
 }

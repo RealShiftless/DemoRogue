@@ -8,7 +8,9 @@ namespace DemoRogue.World.Rooms
 {
     public interface IRoomType
     {
-        public bool GeneratesPaths => true;
+        public bool AllowsPaths => true;
+
+        public bool IsValidSpawn => true;
 
         //void PlayerEnter();
     }

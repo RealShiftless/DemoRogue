@@ -1,4 +1,5 @@
-﻿using DemoRogue.World.Rooms;
+﻿using DemoRogue.World.Building;
+using DemoRogue.World.Rooms;
 using Shiftless.Clockwork.Retro.Mathematics;
 
 namespace DemoRogue.World.Generation
@@ -21,8 +22,8 @@ namespace DemoRogue.World.Generation
 
         //private Random RNG = new();
 
-        private DungeonRoom[,]? _rooms;
-        private int _roomCount;
+        //private DungeonRoom[,]? _rooms;
+        //private int _roomCount;
 
         private Point8? _spawn;
 
@@ -55,11 +56,9 @@ namespace DemoRogue.World.Generation
 
 
         // Interface
-        void IGenerator.Generate()
+        void IGenerator.Generate(DungeonBuilder dungeon)
         {
-            // First we initialize the rooms array
-            _rooms = new DungeonRoom[_gridWidth, _gridHeight];
-
+            /*
             // We get the max size of the room, you can set this in code, but due to the grid like generation, this size might be bigger than actually usefull in the grid like system
             // Due to room overlap.
             // TODO: Think about a possibility of making this a toggle. Or atleast make something that fuses two rooms together might be cool :)
@@ -69,12 +68,64 @@ namespace DemoRogue.World.Generation
             // We also calculate the amount of tiles in each section of the grid :)
             int gridTileWidth = Dungeon.WIDTH / _gridWidth;
             int gridTileHeight = Dungeon.HEIGHT / _gridHeight;
+            */
 
             // We also store valid rooms here. Because sometimes we generate dummy rooms based on roomSpawnPercentage. 
             // These dummy rooms are used to later generate paths. This way I can generate paths between rooms further appart than 1 grid cell in an easy optimized way :)
             // This way it's easier to generate random loot later on, and also get the spawn position for the player & enemies for example :)
-            List<Point8> validRooms = [];
+            // List<Point8> validRooms = [];
 
+            // First we generate rooms
+            dungeon.EnumerateGrid((gridX, gridY) =>
+            {
+                // First we check if we should spawn a room, otherwise make a dummy room
+                // Dummy rooms are used for easier paths
+                if(RNG.NextFloat() > RoomPercentage)
+                {
+                    // We randomly get the dummy rooms position
+                    int dummyX = RNG.Next(2, dungeon.MaxRoomWidth);
+                    int dummyY = RNG.Next(2, dungeon.MaxRoomHeight);
+
+                    // And create a new dungeon room with a width and height of 1 :)
+                    dungeon.SetRoom(gridX, gridY, new(dummyX, dummyY, 1, 1), RoomTypes.Dummy);
+
+                    return;
+                }
+
+                // We generate a room size
+                int width = RNG.Next(MinRoomWidth, dungeon.MaxRoomWidth);
+                int height = RNG.Next(MinRoomHeight, dungeon.MaxRoomHeight);
+
+                // We get the maximum position the chunk can be in. This is because say the MaxRoomGridWidth is 16, the generated room is of Width 16, if we put it at anywhere else than
+                // 0,0 (local) it will overlap with different sections of the grid
+                // We also do it in this order because otherwise the room size randomization will be skewed towards smalled rooms
+                int maxX = dungeon.MaxRoomWidth - width;
+                int maxY = dungeon.MaxRoomHeight - height;
+
+                // We get the random room position based on the max position
+                int localX = RNG.Next(maxX) + GridBorder;
+                int localY = RNG.Next(maxY) + GridBorder;
+
+                // We create the room
+                dungeon.SetRoom(gridX, gridY, new(localX, localY, width, height), RoomTypes.Default);
+            });
+
+            // Now generate the paths
+            dungeon.EnumerateGrid((gridX, gridY) =>
+            {
+                // First we try to generate one upward
+                if (gridY != _gridHeight - 1 && RNG.NextFloat() < PathPercentage)
+                    dungeon.CreatePath(new(gridX, gridY), Direction.Up);
+
+                // And now we try to generate one rightward
+                if (gridX != _gridWidth - 1 && RNG.NextFloat() < PathPercentage)
+                    dungeon.CreatePath(new(gridX, gridY), Direction.Right);
+            });
+
+            // Now we validate all paths
+            //dungeon.ValidateAllPaths();
+
+            /*
             // First generate the rooms
             EnumerateGrid((gridX, gridY) =>
             {
@@ -120,7 +171,9 @@ namespace DemoRogue.World.Generation
                 // Because we got here it means we generated a valid room, so we add it to the valid rooms list
                 validRooms.Add(new(gridX, gridY));
             });
+            */
 
+            /*
             // Here we will generate the paths between the rooms
             EnumerateGrid((gridX, gridY) =>
             {
@@ -175,7 +228,9 @@ namespace DemoRogue.World.Generation
                     destRoom.LeadsToSource = sourceRoom.LeadsToSource;
                 }
             });
+            */
 
+            /*
             // Validate the map, so that each room leads to 0, 0. Or "Source"
             EnumerateGrid((gridX, gridY) =>
             {
@@ -189,17 +244,10 @@ namespace DemoRogue.World.Generation
                     }
                 }
             });
-
-            // And now get a valid spawn
-            Point8 spawnRoomPos = validRooms[RNG.Next(validRooms.Count)];
-            DungeonRoom spawnRoom = _rooms[spawnRoomPos.X, spawnRoomPos.Y];
-
-            int spawnX = RNG.Next(spawnRoom.Body.Width) + spawnRoom.Body.Left;
-            int spawnY = RNG.Next(spawnRoom.Body.Height) + spawnRoom.Body.Bottom;
-
-            _spawn = new(spawnX, spawnY);
+            */
         }
-
+        
+        /*
         private void EnumerateGrid(Action<int, int> enumerationFunc)
         {
             for (int gridX = 0; gridX < _gridWidth; gridX++)
@@ -211,15 +259,14 @@ namespace DemoRogue.World.Generation
             }
         }
 
+        /*
         bool IGenerator.IsTileAir(Point8 point)
         {
-            if (_rooms == null)
-                throw new InvalidOperationException("Generator had no generated data");
-
             int gridX = (int)(point.X / (float)Dungeon.WIDTH  * _gridWidth);
             int gridY = (int)(point.Y / (float)Dungeon.HEIGHT * _gridHeight);
 
             return _rooms[gridX, gridY].Contains(point, true) == true;
         }
+        */
     }
 }

@@ -21,5 +21,21 @@ namespace DemoRogue.World
         public readonly RoomTypes? RoomType = type;
 
         private readonly byte[] _paths = paths;
+
+
+        // Func
+        public readonly bool IsTileOpen(int x, int y)
+        {
+            if (RoomBody?.Contains(x, y) == true)
+                return true;
+
+            foreach (byte pathIndex in _paths)
+                if (Dungeon.GetPath(pathIndex).Contains(new(x, y)))
+                    return true;
+
+            return false;
+
+        }
+        public readonly bool IsTileAir(Point8 position) => IsTileOpen(position.X, position.Y);
     }
 }

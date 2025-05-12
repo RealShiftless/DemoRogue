@@ -11,8 +11,8 @@ namespace DemoRogue.World.Building
 
         private readonly bool _isSource;
 
-        private Rect8? _roomBody;
-        private RoomTypes? _roomType;
+        private Rect8? _roomBody = null;
+        private RoomTypes? _roomType = null;
 
         private List<byte> _paths = [];
 
@@ -50,9 +50,18 @@ namespace DemoRogue.World.Building
             
             // If we are not already leading to the source (0,0) we set it to the leads to source bool given.
             // This way we can easily check if this chunk leads to the source
-            if(!_leadsToSource)
-                _leadsToSource = leadsToSource;
-        } 
+            if(leadsToSource)
+                SetLeadsToSource();
+        }
+
+        private void SetLeadsToSource()
+        {
+            if (_leadsToSource)
+                return;
+
+            _leadsToSource = true;
+        }
+
 
         internal Chunk Build()
         {
@@ -79,8 +88,8 @@ namespace DemoRogue.World.Building
         {
             Direction.Up => new(RNG.Next(RoomBody.Left, RoomBody.Right), RoomBody.Top),
             Direction.Down => new(RNG.Next(RoomBody.Left, RoomBody.Right), RoomBody.Bottom),
-            Direction.Left => new(RNG.Next(RoomBody.Bottom, RoomBody.Top), RoomBody.Left),
-            Direction.Right => new(RNG.Next(RoomBody.Bottom, RoomBody.Top), RoomBody.Right),
+            Direction.Left => new(RoomBody.Left, RNG.Next(RoomBody.Bottom, RoomBody.Top)),
+            Direction.Right => new(RoomBody.Right, RNG.Next(RoomBody.Bottom, RoomBody.Top)),
 
             _ => throw new NotImplementedException($"Direction {direction} went unhandled!")
         };

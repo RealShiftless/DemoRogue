@@ -1,9 +1,11 @@
-﻿using DemoRogue.World.Generation;
+﻿using DemoRogue.World.Building;
+using DemoRogue.World.Generation;
 using Shiftless.Clockwork.Retro.Mathematics;
 using Shiftless.Clockwork.Retro.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -38,13 +40,27 @@ namespace DemoRogue.World
 
 
         // Values
-        private byte[,] _data = new byte[(WIDTH / 8), HEIGHT];
+        private readonly DungeonBuilder _builder;
 
-        private Random _rng = new();
+
+        // Map data
+        private byte[,] _collisionMap = new byte[(WIDTH / 8), HEIGHT];
+
+        private Chunk[,] _chunks = null!;
+        private Path[] _paths = null!;
+        private Point8[] _validSpawnChunks = null!;
+
+
+        // Properties
+        public int GridWidth => _chunks.GetLength(0);
+        public int GridHeight => _chunks.GetLength(1);
+
+        public int ChunkTileWidth => WIDTH / GridWidth;
+        public int ChunkTileHeight => HEIGHT / GridHeight;
 
 
         // Constructor
-        public Dungeon() { }
+        public Dungeon() => _builder = new(this, 6, 6);
 
 
         // Static Func
@@ -57,20 +73,63 @@ namespace DemoRogue.World
         }
 
 
+        // Getters
+        public Chunk GetChunk(int chunkX, int chunkY) => _chunks[chunkX, chunkY];
+        public Chunk GetChunk(Point8 position) => GetChunk(position.X, position.Y);
+
+        public Path GetPath(byte pathIndex) => _paths[pathIndex];
+
+        public Point8 GenerateValidSpawn()
+        {
+            int index = RNG.Next(_validSpawnChunks.Length);
+
+            Chunk chunk = GetChunk(_validSpawnChunks[index]);
+
+            if (chunk.RoomBody == null)
+                throw new InvalidOperationException("Somehow, the valid spawn room, was not a valid spawn room?!?! :(");
+
+            int x = RNG.Next(chunk.RoomBody.Value.Left, chunk.RoomBody.Value.Right);
+            int y = RNG.Next(chunk.RoomBody.Value.Bottom, chunk.RoomBody.Value.Top);
+
+            return new(x, y);
+        }
+
+
         // Func
         public void GenerateFloor(int floor, IGenerator generator)
         {
-            generator.Generate();
+            // First we update the grid in the builder
+            _builder.SetGrid(generator.GridWidth, generator.GridHeight);
+
+            // We use the generator to fill up the builder
+            generator.Generate(_builder);
+
+            // We get the data from the builder
+            (Chunk[,] chunks, Path[] paths, Point8[] validSpawnChunks) = _builder.Build();
+
+            // We set the data here
+            _chunks = chunks;
+            _paths = paths;
+            _validSpawnChunks = validSpawnChunks;
+
+            // And now we generate a collision map
+
             for (int x = 0; x < WIDTH; x++)
             {
                 for (int y = 0; y < HEIGHT; y++)
                 {
-                    SetTile(x, y, generator.IsTileAir(new(x, y)));
+                    int chunkX = Math.Clamp(x / _builder.ChunkTileWidth, 0, _builder.GridWidth - 1);
+                    int chunkY = Math.Clamp(y / _builder.ChunkTileHeight, 0, _builder.GridHeight - 1);
+
+                    bool flag = GetChunk(chunkX, chunkY).IsTileOpen(x, y);
+
+                    SetTileCollisionFlag(x, y, flag);
                 }
             }
         }
 
-        public bool IsTileAir(int x, int y)
+
+        public bool IsTileOpen(int x, int y)
         {
             if(x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
                 return false;
@@ -79,24 +138,25 @@ namespace DemoRogue.World
             int bit = x % 8;
             int shift = 7 - bit % 8;
 
-            return (_data[packedX, y] & (0b1 << shift)) != 0;
+            return (_collisionMap[packedX, y] & (0b1 << shift)) != 0;
         }
-        public bool IsTileAir(Point8 p) => IsTileAir(p.X, p.Y);
+        public bool IsTileAir(Point8 p) => IsTileOpen(p.X, p.Y);
 
-        public void SetTile(int x, int y, bool value)
+        private void SetTileCollisionFlag(int x, int y, bool value)
         {
             int packedX = x / 8;
             int bit = x % 8;
             int shift = 7 - bit % 8;
 
             if (value)
-                _data[packedX, y] |= (byte)(1 << shift);
+                _collisionMap[packedX, y] |= (byte)(1 << shift);
             else
-                _data[packedX, y] &= (byte)~(1 << shift);
+                _collisionMap[packedX, y] &= (byte)~(1 << shift);
         }
-        public void SetTile(Point8 p) => IsTileAir(p.X, p.Y);
+        //private void SetTile(Point8 p) => IsTileOpen(p.X, p.Y);
 
-        public void BuildSector(int x, int y, int tX, int tY, Tilemap tilemap)
+
+        internal void BuildSector(int x, int y, int tX, int tY, Tilemap tilemap)
         {
             bool fillZero = x < 0 || x >= SECTORS_X || y < 0 || y >= SECTORS_Y;
             
@@ -113,7 +173,7 @@ namespace DemoRogue.World
                     int layerX = worldX + localX;
                     int tileMapX = tX + localX;
 
-                    if (fillZero || IsTileAir(worldX + localX, worldY + localY))
+                    if (fillZero || IsTileOpen(worldX + localX, worldY + localY))
                     {
                         tilemap.Set(tileMapX, tileMapY, 0, 0, 0, fillZero ? PaletteIndex.Palette0 : PaletteIndex.Palette1);
                         continue;
@@ -151,7 +211,7 @@ namespace DemoRogue.World
                     if (localX == 0 && localY == 0)
                         continue;
 
-                    if (!IsTileAir(x + localX, y + localY))
+                    if (!IsTileOpen(x + localX, y + localY))
                         mask |= (byte)(0b1 << i);
 
                     i++;

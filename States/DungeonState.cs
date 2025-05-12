@@ -49,7 +49,7 @@ namespace DemoRogue.States
 
             Stopwatch sw = Stopwatch.StartNew();
             GenerateNextFloor();
-            MovePlayer(_generator.CurrentSpawn);
+            MovePlayer(_dungeon.GenerateValidSpawn());
             RefreshVisibleTiles();
             sw.Stop();
 
@@ -67,7 +67,7 @@ namespace DemoRogue.States
             {
                 Stopwatch sw = Stopwatch.StartNew();
                 GenerateNextFloor();
-                MovePlayer(_generator.CurrentSpawn);
+                MovePlayer(_dungeon.GenerateValidSpawn());
                 RefreshVisibleTiles();
                 sw.Stop();
 

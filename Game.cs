@@ -54,6 +54,9 @@ namespace DemoRogue
                 56,
                 57,
                 48,
+                64,
+                46,
+                33,
                 64
             ];
 

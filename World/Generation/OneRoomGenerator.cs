@@ -1,4 +1,5 @@
-﻿using Shiftless.Clockwork.Retro.Mathematics;
+﻿using DemoRogue.World.Building;
+using Shiftless.Clockwork.Retro.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,11 @@ namespace DemoRogue.World.Generation
 
         public Point8 CurrentSpawn => new(64, 64);
 
-        public void Generate() { }
+        int IGenerator.GridWidth => 1;
+
+        int IGenerator.GridHeight => 1;
+
+        public void Generate(DungeonBuilder builder) { }
 
         public bool IsTileAir(Point8 point)
         {
