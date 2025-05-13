@@ -1,4 +1,5 @@
-﻿using DemoRogue.World.Building;
+﻿using DemoRogue.Entities;
+using DemoRogue.World.Building;
 using DemoRogue.World.Generation;
 using Shiftless.Clockwork.Retro.Mathematics;
 using Shiftless.Clockwork.Retro.Rendering;
@@ -40,6 +41,8 @@ namespace DemoRogue.World
 
 
         // Values
+        public readonly EntityManager Entities;
+
         private readonly DungeonBuilder _builder;
 
 
@@ -60,7 +63,11 @@ namespace DemoRogue.World
 
 
         // Constructor
-        public Dungeon() => _builder = new(this, 6, 6);
+        public Dungeon()
+        {
+            Entities = new(this);
+            _builder = new(this, 6, 6);
+        }
 
 
         // Static Func
@@ -121,7 +128,7 @@ namespace DemoRogue.World
                     int chunkX = Math.Clamp(x / _builder.ChunkTileWidth, 0, _builder.GridWidth - 1);
                     int chunkY = Math.Clamp(y / _builder.ChunkTileHeight, 0, _builder.GridHeight - 1);
 
-                    bool flag = GetChunk(chunkX, chunkY).IsTileOpen(x, y);
+                    bool flag = GetChunk(chunkX, chunkY).IsTileAir(x, y);
 
                     SetTileCollisionFlag(x, y, flag);
                 }

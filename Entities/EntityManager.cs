@@ -32,9 +32,38 @@ namespace DemoRogue.Entities
 
 
         // Func
-        public Entity Instantiate(Point8 position)
+        internal void TickEntities()
         {
+            foreach (byte index in _activeEntities)
+                _entities[index].Tick();
+        }
 
+        public Entity Instantiate(Point8 position, EntityTypes type)
+        {
+            if (_freeEntities.Count == 0)
+                throw new OutOfMemoryException($"Entity.MAX ({Entity.MAX}) reached!");
+
+            byte index = _freeEntities.Dequeue();
+
+            Entity entity = _entities[index];
+
+            entity.SetActive(true);
+            entity.SetPosition(position);
+            entity.SetType(type);
+
+            _activeEntities.Add(index);
+
+            return entity;
+        }
+
+        public 
+
+        public void Destroy(byte index)
+        {
+            _activeEntities.Remove(index);
+            _freeEntities.Enqueue(index);
+
+            _entities[index].SetActive(false);
         }
     }
 }

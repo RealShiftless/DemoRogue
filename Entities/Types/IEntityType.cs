@@ -10,6 +10,6 @@
         void Initialize(Entity entity);
         void Tick(Entity entity);
 
-        void Dispose() { }
+        void Dispose(Entity entity) { }
     }
 }
