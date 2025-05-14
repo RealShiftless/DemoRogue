@@ -41,6 +41,8 @@ namespace DemoRogue.World
 
 
         // Values
+        public readonly Game Game;
+
         public readonly EntityManager Entities;
 
         private readonly DungeonBuilder _builder;
@@ -63,8 +65,10 @@ namespace DemoRogue.World
 
 
         // Constructor
-        public Dungeon()
+        public Dungeon(Game game)
         {
+            Game = game;
+
             Entities = new(this);
             _builder = new(this, 6, 6);
         }
@@ -135,19 +139,47 @@ namespace DemoRogue.World
             }
         }
 
-
         public bool IsTileOpen(int x, int y)
         {
+            // First we get the chunk coord
+            int chunkX = x / ChunkTileWidth;
+            int chunkY = y / ChunkTileHeight;
+
+            // Now we get the chunk
+            Chunk chunk = GetChunk(chunkX, chunkY);
+
+            // If we get here we must check if the tile is a wall, if so we are not open
+            if (!chunk.IsTileAir(x, y))
+                return false;
+
+            // Now I check if there is an entity collision, if so we are also not open
+            if (chunk.IsTileOccupied(x, y))
+                return false;
+
+            // Otherwise, if the tile is air, and there is no entity
+            return true;
+        }
+        public bool IsTileOpen(Point8 p) => IsTileOpen(p.X, p.Y);
+
+        public bool IsTileAir(int x, int y)
+        {
+            // First we check if we are out of range, if so we return false
             if(x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
                 return false;
 
+            // We get the packed x, because we have 8 tiles per byte, we devide by 8
             int packedX = x / 8;
+
+            // Now we get the bit we must actually target
             int bit = x % 8;
+
+            // And using that bit we generate an amount we must shift by :)
             int shift = 7 - bit % 8;
 
+            // We return said collision map value
             return (_collisionMap[packedX, y] & (0b1 << shift)) != 0;
         }
-        public bool IsTileOpen(Point8 p) => IsTileOpen(p.X, p.Y);
+        public bool IsTileAir(Point8 p) => IsTileAir(p.X, p.Y);
 
         private void SetTileCollisionFlag(int x, int y, bool value)
         {
@@ -180,7 +212,7 @@ namespace DemoRogue.World
                     int layerX = worldX + localX;
                     int tileMapX = tX + localX;
 
-                    if (fillZero || IsTileOpen(worldX + localX, worldY + localY))
+                    if (fillZero || IsTileAir(worldX + localX, worldY + localY))
                     {
                         tilemap.Set(tileMapX, tileMapY, 0, 0, 0, fillZero ? PaletteIndex.Palette0 : PaletteIndex.Palette1);
                         continue;
@@ -218,7 +250,7 @@ namespace DemoRogue.World
                     if (localX == 0 && localY == 0)
                         continue;
 
-                    if (!IsTileOpen(x + localX, y + localY))
+                    if (!IsTileAir(x + localX, y + localY))
                         mask |= (byte)(0b1 << i);
 
                     i++;

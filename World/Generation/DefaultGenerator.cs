@@ -1,11 +1,12 @@
 ﻿using DemoRogue.World.Building;
 using DemoRogue.World.Rooms;
 using Shiftless.Clockwork.Retro.Mathematics;
+using Shiftless.Common.Registration;
 using System.Diagnostics;
 
 namespace DemoRogue.World.Generation
 {
-    public class DefaultGenerator : IGenerator
+    public class DefaultGenerator : RegistryItem, IGenerator
     {
         // Values
         private int _gridWidth = 6;
@@ -71,7 +72,7 @@ namespace DemoRogue.World.Generation
                     int dummyY = RNG.Next(2, dungeon.MaxRoomHeight);
 
                     // And create a new dungeon room with a width and height of 1 :)
-                    dungeon.SetRoom(gridX, gridY, new(dummyX, dummyY, 1, 1), RoomTypes.Dummy);
+                    dungeon.SetRoom(gridX, gridY, new(dummyX, dummyY, 1, 1), GameRegistry.Rooms.Dummy);
 
                     return;
                 }
@@ -91,7 +92,7 @@ namespace DemoRogue.World.Generation
                 int localY = RNG.Next(maxY) + GridBorder;
 
                 // We create the room
-                dungeon.SetRoom(gridX, gridY, new(localX, localY, width, height), RoomTypes.Default);
+                dungeon.SetRoom(gridX, gridY, new(localX, localY, width, height), GameRegistry.Rooms.Default);
             });
 
             // Now generate the paths

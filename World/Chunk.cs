@@ -1,4 +1,5 @@
-﻿using DemoRogue.World.Rooms;
+﻿using DemoRogue.Entities;
+using DemoRogue.World.Rooms;
 using Shiftless.Clockwork.Retro.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DemoRogue.World
 {
-    public readonly struct Chunk(Dungeon dungeon, Rect8? roomBody, RoomTypes? type, byte[] paths)
+    public readonly struct Chunk(Dungeon dungeon, Rect8? roomBody, RoomType? type, byte[] paths)
     {
         // Constants
         public const int BORDER = 2;
@@ -18,7 +19,7 @@ namespace DemoRogue.World
         public readonly Dungeon Dungeon = dungeon;
 
         public readonly Rect8? RoomBody = roomBody;
-        public readonly RoomTypes? RoomType = type;
+        public readonly RoomType? RoomType = type;
 
         private readonly byte[] _paths = paths;
 
@@ -33,12 +34,23 @@ namespace DemoRogue.World
 
 
         // Func
-        public readonly bool IsTileFree(int x, int y)
+        /// <summary>
+        /// Gets wether or not a tile is occupied by an entity.
+        /// </summary>
+        /// <param name="x">X position</param>
+        /// <param name="y">Y position</param>
+        /// <returns></returns>
+        public readonly bool IsTileOccupied(int x, int y)
         {
             foreach(byte entityId in _entities)
             {
-                Dungeon.Entities.Ge
+                Entity entity = Dungeon.Entities.GetEntity(entityId);
+
+                if(entity.Position.X == x && entity.Position.Y == y)
+                    return true;
             }
+
+            return false;
         }
 
         /// <summary>

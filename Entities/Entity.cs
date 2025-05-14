@@ -1,4 +1,5 @@
 ﻿using DemoRogue.Entities.Types;
+using DemoRogue.World;
 using Shiftless.Clockwork.Retro.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -8,10 +9,14 @@ using System.Threading.Tasks;
 
 namespace DemoRogue.Entities
 {
+    public delegate void EntitySectorChangedEventHandler(EntitySectorChangedEventArgs args);
+
     public sealed class Entity
     {
         // Constants
         public const int MAX = 60;
+
+        public const int ANIMATION_FPS = 12;
 
 
         // Values
@@ -20,14 +25,30 @@ namespace DemoRogue.Entities
 
         private bool _isActive = false;
 
-        private EntityTypes _type;
+        private EntityType _type = null!;
         private Point8 _position;
+        private Point8 _sector;
+
+        private int _lastAnimFrame = -1;
 
 
         // Properties
         public bool IsActive => _isActive;
 
-        public IEntityType Type => _type.ToObject();
+        public EntityType Type => _type;
+        public Point8 Position
+        {
+            get => _position;
+            set => SetPosition(value);
+        }
+        public Point8 Sector => _sector;
+
+        public Dungeon Dungeon => Manager.Dungeon;
+        public Game Game => Dungeon.Game;
+
+
+        // Events
+        public event EntitySectorChangedEventHandler? SectorChanged;
 
 
         // Constructor
@@ -39,31 +60,52 @@ namespace DemoRogue.Entities
 
 
         // Func
-        internal void Tick()
+        internal void UpdateSprite()
         {
-
+            Game.Tilemap.Set(_position, 1, Type.AnimationFrameIndices[Game.Time.Frame / ANIMATION_FPS % Type.AnimationFrames], null, Type.Palette);
         }
-
-        internal void Dispose()
+        internal bool Tick()
         {
-            _isActive = false;
+            EntityTickEventArgs args = new();
+            Type.Tick(this, ref args);
+
+            return args.IsHandled;
         }
 
 
         // Setters
-        internal void SetActive(bool isActive)
+        internal void Initialize(EntityType type, Point8 position)
         {
-            _isActive = isActive;
+            // First set the needed values
+            _type = type;
+            _position = position;
+            _isActive = true;
 
-            if (IsActive)
-            {
-                Type.Initialize(this);
-            }
-            else
-                Type.Dispose(this);
+            // Update the tilemap
+            // TODO: Only update tilemap if visisble :)
+            UpdateSprite();
+
+            // And initialize the entity using it's type
+            Type.Initialize(this);
         }
-        internal void SetType(EntityTypes type) => _type = type;
+        internal void Dispose()
+        {
+            _isActive = false;
+        }
         
-        public void SetPosition(Point8 position) => _position = position;
+        public void SetPosition(Point8 position)
+        {
+            // Update the tilemap
+            Game.Tilemap.Set(_position, 1, 0);
+
+            _position = position;
+
+            Point8 oldSector = _sector;
+            _sector = _position / Dungeon.SECTOR_TILE_AREA;
+            if (oldSector != _sector)
+                SectorChanged?.Invoke(new(this, _sector, oldSector));
+
+            UpdateSprite();
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Shiftless.Common.Registration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace DemoRogue.World.Rooms.Types
 {
-    public sealed class DummyRoomType : IRoomType
+    public sealed class DummyRoomType : RoomType
     {
-        bool IRoomType.IsValidSpawn => false;
+        public override bool IsValidSpawn => false;
     }
 }

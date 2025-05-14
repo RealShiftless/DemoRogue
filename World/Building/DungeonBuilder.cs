@@ -85,7 +85,7 @@ namespace DemoRogue.World.Building
 
 
         // Func
-        public void SetRoom(int gridX, int gridY, Rect8 localBody, RoomTypes type)
+        public void SetRoom(int gridX, int gridY, Rect8 localBody, RoomType type)
         {
             // First we check if the room already is created
             if (_chunks[gridX, gridY].ContainsRoom)
@@ -98,10 +98,10 @@ namespace DemoRogue.World.Building
             _chunks[gridX, gridY].SetRoom(body, type);
 
             // Add the room as a spawn if it be one
-            if (type.IsValidSpawn())
+            if (type.IsValidSpawn)
                 _validSpawnChunks.Add(new(gridX, gridY));
         }
-        public void SetRoom(Point8 gridPosition, Rect8 localBody, RoomTypes type) => SetRoom(gridPosition.X, gridPosition.Y, localBody, type);
+        public void SetRoom(Point8 gridPosition, Rect8 localBody, RoomType type) => SetRoom(gridPosition.X, gridPosition.Y, localBody, type);
 
         public ChunkBuilder GetChunk(int x, int y) => _chunks[x, y];
         public ChunkBuilder GetChunk(Point8 position) => GetChunk(position.X, position.Y);
@@ -216,7 +216,7 @@ namespace DemoRogue.World.Building
                     return;
 
                 // Here we check if the chunk allows paths
-                if (!_chunks[gridX, gridY].RoomType.GetAllowsPaths())
+                if (!_chunks[gridX, gridY].RoomType.AllowsPaths)
                     return;
 
                 if (gridX == 0)

@@ -1,9 +1,11 @@
 ﻿using DemoRogue.States;
+using DemoRogue.Util;
 using DemoRogue.World;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Shiftless.Clockwork.Retro;
 using Shiftless.Clockwork.Retro.Mathematics;
+using Shiftless.Common.Registration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +19,9 @@ namespace DemoRogue
     public sealed class Game : GameBase
     {
         // This basically just stores the ascii values for the supported characters by the sprite font [A-Z0-9@]
+        private Registrar _registrar = null!;
+        private Registry _registry = null!;
+
         private byte[] _fontTextures = [
                 97,
                 98,
@@ -62,6 +67,12 @@ namespace DemoRogue
 
         private GameState _gameState;
 
+
+        // Properties
+        public Registrar Registrar => _registrar;
+        public Registry Registry => _registry;
+
+
         // Constructor
         public Game() : base(new() { WindowTitle = "Demo Rogue" })
         {
@@ -80,17 +91,18 @@ namespace DemoRogue
         // Func
         protected override void Load()
         {
+            // Load some default textures
             Tileset.SetTextureOcupiedFlag(0, true);
             Tileset.LoadTextures(@"textures\font", _fontTextures);
             Dungeon.SetTileset(Tileset.LoadTextures(@"textures\walls"));
 
-            _gameState.Initialize(this);
-
+            // Set the input to the arrow keys
             Input.Up = Keys.Up;
             Input.Down = Keys.Down;
             Input.Left = Keys.Left;
             Input.Right = Keys.Right;
 
+            // Set some palletes
             Renderer.SetPalette(PaletteIndex.Palette0, new(
                 new(),
                 new(0x6110a2FF),
@@ -117,6 +129,25 @@ namespace DemoRogue
                 new(0xffffffFF)
                 ));
 
+            // Initialize the registrar
+            _registrar = new((registrar) =>
+            {
+                _registry = registrar.AddRegistry("core", new GameRegistry());
+            });
+
+            // Load the registrar resources
+            _registrar.EnumerateItems((item) =>
+            {
+                if (item is not ILoadsResources resourceLoader)
+                    return;
+
+                resourceLoader.Load(this);
+            });
+
+            // Initialize the game state
+            _gameState.Initialize(this);
+
+            // Finally collect when we still can
             GC.Collect();
         }
 

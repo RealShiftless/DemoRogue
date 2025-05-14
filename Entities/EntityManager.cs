@@ -1,4 +1,5 @@
-﻿using DemoRogue.World;
+﻿using DemoRogue.Entities.Types;
+using DemoRogue.World;
 using Shiftless.Clockwork.Retro.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace DemoRogue.Entities
     public sealed class EntityManager
     {
         // Values
-        public readonly Dungeon Dungeon = new Dungeon();
+        public readonly Dungeon Dungeon;
 
         private Entity[] _entities = new Entity[Entity.MAX];
 
@@ -22,6 +23,8 @@ namespace DemoRogue.Entities
         // Constructor
         internal EntityManager(Dungeon dungeon)
         {
+            Dungeon = dungeon;
+
             // Fill up the queue with free entities
             for(byte i = 0; i < Entity.MAX; i++)
             {
@@ -32,38 +35,54 @@ namespace DemoRogue.Entities
 
 
         // Func
+        internal void UpdateSprites()
+        {
+            foreach (byte index in _activeEntities)
+                _entities[index].UpdateSprite();
+        }
         internal void TickEntities()
         {
             foreach (byte index in _activeEntities)
                 _entities[index].Tick();
         }
 
-        public Entity Instantiate(Point8 position, EntityTypes type)
+        /// <summary>
+        /// Tries to instantiate a new entity.
+        /// </summary>
+        /// <param name="position">The position of the entity</param>
+        /// <param name="type">The type of the entity</param>
+        /// <returns>The entity that was instantiated.</returns>
+        /// <exception cref="OutOfMemoryException">When we exceed Entity.MAX entities.</exception>
+        public Entity Instantiate(Point8 position, EntityType type)
         {
+            // First check if we even have any free spots left
             if (_freeEntities.Count == 0)
                 throw new OutOfMemoryException($"Entity.MAX ({Entity.MAX}) reached!");
 
+            // Get the index for the entity
             byte index = _freeEntities.Dequeue();
 
+            // Get the entity
             Entity entity = _entities[index];
 
-            entity.SetActive(true);
-            entity.SetPosition(position);
-            entity.SetType(type);
+            // Set it's values
+            entity.Initialize(type, position);
 
+            // Add it to the active entities list
             _activeEntities.Add(index);
 
+            // And return said entity
             return entity;
         }
 
-        public 
+        public Entity GetEntity(byte index) => _entities[index];
 
         public void Destroy(byte index)
         {
             _activeEntities.Remove(index);
             _freeEntities.Enqueue(index);
 
-            _entities[index].SetActive(false);
+            _entities[index].Dispose();
         }
     }
 }

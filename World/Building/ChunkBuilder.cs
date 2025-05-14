@@ -12,7 +12,7 @@ namespace DemoRogue.World.Building
         private readonly bool _isSource;
 
         private Rect8? _roomBody = null;
-        private RoomTypes? _roomType = null;
+        private RoomType? _roomType = null;
 
         private List<byte> _paths = [];
         private List<Point8> _pathRooms = [];
@@ -24,7 +24,7 @@ namespace DemoRogue.World.Building
         public bool ContainsRoom => _roomBody != null;
 
         public Rect8 RoomBody => _roomBody ?? throw new NullReferenceException($"{nameof(RoomBody)} was not set!");
-        public RoomTypes RoomType => _roomType ?? throw new NullReferenceException($"{nameof(RoomType)} was not set!");
+        public RoomType RoomType => _roomType ?? throw new NullReferenceException($"{nameof(RoomType)} was not set!");
 
         public bool LeadsToSource => _isSource || _leadsToSource;
 
@@ -40,7 +40,7 @@ namespace DemoRogue.World.Building
 
 
         // Functions
-        internal void SetRoom(Rect8 body, RoomTypes type)
+        internal void SetRoom(Rect8 body, RoomType type)
         {
             _roomBody = body;
             _roomType = type;
