@@ -1,5 +1,6 @@
 ﻿using DemoRogue.Entities;
 using DemoRogue.Entities.Types;
+using DemoRogue.Registration;
 using DemoRogue.World;
 using DemoRogue.World.Generation;
 using OpenTK.Windowing.GraphicsLibraryFramework;

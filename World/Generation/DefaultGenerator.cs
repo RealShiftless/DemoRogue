@@ -1,4 +1,5 @@
-﻿using DemoRogue.World.Building;
+﻿using DemoRogue.Registration;
+using DemoRogue.World.Building;
 using Shiftless.Clockwork.Retro.Mathematics;
 using Shiftless.Common.Mathematics;
 using Shiftless.Common.Registration;
