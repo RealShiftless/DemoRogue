@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DemoRogue.States
+﻿namespace DemoRogue.Scenes
 {
-    public abstract class GameState
+    public abstract class Scene
     {
         // Values
         private Game? _game;
 
 
         // Properties
-        public Game Game => _game ?? throw new InvalidOperationException($"{nameof(GameState)} was not initialized!");
+        public Game Game => _game ?? throw new InvalidOperationException($"{nameof(Scene)} was not initialized!");
 
 
         // Func

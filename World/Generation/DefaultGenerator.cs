@@ -1,8 +1,7 @@
 ﻿using DemoRogue.World.Building;
-using DemoRogue.World.Rooms;
 using Shiftless.Clockwork.Retro.Mathematics;
+using Shiftless.Common.Mathematics;
 using Shiftless.Common.Registration;
-using System.Diagnostics;
 
 namespace DemoRogue.World.Generation
 {
@@ -27,8 +26,6 @@ namespace DemoRogue.World.Generation
         //private DungeonRoom[,]? _rooms;
         //private int _roomCount;
 
-        private Point8? _spawn;
-
 
         // Properties
         public int GridWidth => _gridWidth;
@@ -38,8 +35,6 @@ namespace DemoRogue.World.Generation
 
         public int MaxRoomGridWidth => Dungeon.WIDTH / _gridWidth - GridBorder * 2;
         public int MaxRoomGridHeight => Dungeon.HEIGHT / _gridHeight - GridBorder * 2;
-
-        public Point8 CurrentSpawn => _spawn ?? throw new NullReferenceException("Spawn was null!");
 
 
         // Constructor
@@ -65,7 +60,7 @@ namespace DemoRogue.World.Generation
             {
                 // First we check if we should spawn a room, otherwise make a dummy room
                 // Dummy rooms are used for easier paths
-                if(RNG.NextFloat() > RoomPercentage)
+                if (RNG.NextFloat() > RoomPercentage)
                 {
                     // We randomly get the dummy rooms position
                     int dummyX = RNG.Next(2, dungeon.MaxRoomWidth);

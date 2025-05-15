@@ -1,18 +1,11 @@
 ﻿using DemoRogue.World.Building;
-using Shiftless.Clockwork.Retro.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Shiftless.Common.Mathematics;
 
 namespace DemoRogue.World.Generation
 {
     internal class OneRoomGenerator : IGenerator
     {
         public const int BORDER = 2;
-
-        public Point8 CurrentSpawn => new(64, 64);
 
         int IGenerator.GridWidth => 1;
 

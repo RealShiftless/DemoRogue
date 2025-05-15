@@ -1,11 +1,6 @@
 ﻿using DemoRogue.Entities;
 using DemoRogue.World.Rooms;
-using Shiftless.Clockwork.Retro.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Shiftless.Common.Mathematics;
 
 namespace DemoRogue.World
 {
@@ -42,11 +37,11 @@ namespace DemoRogue.World
         /// <returns></returns>
         public readonly bool IsTileOccupied(int x, int y)
         {
-            foreach(byte entityId in _entities)
+            foreach (byte entityId in _entities)
             {
                 Entity entity = Dungeon.Entities.GetEntity(entityId);
 
-                if(entity.Position.X == x && entity.Position.Y == y)
+                if (entity.Position.X == x && entity.Position.Y == y)
                     return true;
             }
 

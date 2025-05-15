@@ -1,10 +1,6 @@
 ﻿using DemoRogue.World.Rooms;
 using Shiftless.Clockwork.Retro.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Shiftless.Common.Mathematics;
 
 namespace DemoRogue.World.Building
 {
@@ -237,7 +233,7 @@ namespace DemoRogue.World.Building
             _paths.Clear();
             _validSpawnChunks.Clear();
 
-            return(chunks, paths, validSpawnChunks);
+            return (chunks, paths, validSpawnChunks);
         }
     }
 }

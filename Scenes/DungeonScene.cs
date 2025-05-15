@@ -3,19 +3,14 @@ using DemoRogue.Entities.Types;
 using DemoRogue.World;
 using DemoRogue.World.Generation;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using Shiftless.Clockwork.Retro.Mathematics;
 using Shiftless.Clockwork.Retro.Rendering;
-using System;
-using System.Collections.Generic;
+using Shiftless.Common.Mathematics;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 #nullable disable
-namespace DemoRogue.States
+namespace DemoRogue.Scenes
 {
-    internal class DungeonState : GameState
+    public sealed class DungeonScene : Scene
     {
         // Constants
         public const int ANIMATION_FPS = 12;
@@ -23,7 +18,7 @@ namespace DemoRogue.States
 
         public const int ANIMATION_FRAMES = 4;
 
-        
+
         // Static values
         private static Vec2i _camOffset = new(-(Renderer.NATIVE_WIDTH / 2) + (Tileset.TILE_PIXEL_AREA / 2), -(Renderer.NATIVE_HEIGHT / 2) + (Tileset.TILE_PIXEL_AREA / 2));
 
@@ -33,10 +28,18 @@ namespace DemoRogue.States
         private Dungeon _dungeon = null!;
 
         private Entity _playerEntity = null!;
+        private Entity _slimeEntity = null!;
+
+        private float _entityAnimTimer;
+        private int _entityAnimFrame;
+
+
+        // Properties
+        public int CurrentEntityAnimationFrame => _entityAnimFrame;
 
 
         // Constructor
-        internal DungeonState()
+        internal DungeonScene()
         {
         }
 
@@ -45,14 +48,19 @@ namespace DemoRogue.States
         public override void Load()
         {
             // Set the dungeon up
-            _dungeon = new(Game);
+            _dungeon = new(this);
 
             //_playerTextures = Game.Tileset.LoadTextures(@"textures\player_anim");
-            _playerEntity = _dungeon.Entities.Instantiate(Point8.Zero, GameRegistry.Entities.Player);
-            _playerEntity.SectorChanged += (args) => RefreshVisibleTiles();
+
 
             Stopwatch sw = Stopwatch.StartNew();
             GenerateNextFloor();
+            _playerEntity = _dungeon.Entities.Instantiate(Point8.Zero, GameRegistry.Entities.Player);
+            _playerEntity.SectorChanged += (args) => RefreshVisibleTiles();
+
+            _slimeEntity = _dungeon.Entities.Instantiate(Point8.Zero, GameRegistry.Entities.Slime);
+
+            _slimeEntity.SetPosition(_dungeon.GenerateValidSpawn());
             _playerEntity.SetPosition(_dungeon.GenerateValidSpawn());
             RefreshVisibleTiles();
             sw.Stop();
@@ -64,27 +72,36 @@ namespace DemoRogue.States
 
         public override void Update(float deltaTime)
         {
-            if(Game.Window.KeyboardState.IsKeyPressed(Keys.R))
+            if (Game.Window.KeyboardState.IsKeyPressed(Keys.R))
             {
 #if DEBUG
                 Stopwatch sw = Stopwatch.StartNew();
 #endif
                 GenerateNextFloor();
+
                 _playerEntity.SetPosition(_dungeon.GenerateValidSpawn());
+
+                Point8 slimeSpawn = _dungeon.GenerateValidSpawn();
+                _slimeEntity.SetPosition(_playerEntity.Position);
                 RefreshVisibleTiles();
 
                 PlayerType.SetCamOffset(_playerEntity);
 #if DEBUG
                 sw.Stop();
 
+                Debug.WriteLine($"instantiated slime at {_slimeEntity.Position}");
                 Debug.WriteLine($"Generation finished in {sw.Elapsed.TotalMilliseconds}ms!");
 #endif
-
             }
 
             // Do the entity animation
-            if (Game.Time.Frame % Entity.ANIMATION_FPS == 0)
+            _entityAnimTimer += Game.Time.Delta;
+            if (_entityAnimTimer >= Entity.ANIMATION_DELAY)
             {
+                _entityAnimFrame++;
+                _entityAnimTimer = 0;
+
+
                 // Update entities
                 // TODO: I don't have entities yet so i just update the player anim here
                 _dungeon.Entities.UpdateSprites();
@@ -99,7 +116,7 @@ namespace DemoRogue.States
 
 
         // Func
-        
+
 
         public void GenerateNextFloor()
         {

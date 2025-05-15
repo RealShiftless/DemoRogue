@@ -1,11 +1,8 @@
 ﻿using DemoRogue.Entities.Types;
+using DemoRogue.Scenes;
 using DemoRogue.World;
 using Shiftless.Clockwork.Retro.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Shiftless.Common.Mathematics;
 
 namespace DemoRogue.Entities
 {
@@ -17,6 +14,7 @@ namespace DemoRogue.Entities
         public const int MAX = 60;
 
         public const int ANIMATION_FPS = 12;
+        internal const float ANIMATION_DELAY = 1f / ANIMATION_FPS;
 
 
         // Values
@@ -28,8 +26,7 @@ namespace DemoRogue.Entities
         private EntityType _type = null!;
         private Point8 _position;
         private Point8 _sector;
-
-        private int _lastAnimFrame = -1;
+        private Point8 _chunk;
 
 
         // Properties
@@ -44,6 +41,7 @@ namespace DemoRogue.Entities
         public Point8 Sector => _sector;
 
         public Dungeon Dungeon => Manager.Dungeon;
+        public DungeonScene Scene => Dungeon.Scene;
         public Game Game => Dungeon.Game;
 
 
@@ -62,7 +60,7 @@ namespace DemoRogue.Entities
         // Func
         internal void UpdateSprite()
         {
-            Game.Tilemap.Set(_position, 1, Type.AnimationFrameIndices[Game.Time.Frame / ANIMATION_FPS % Type.AnimationFrames], null, Type.Palette);
+            Game.Tilemap.Set(_position, LayerIndex.Tilemap1, Type.AnimationFrameIndices[Scene.CurrentEntityAnimationFrame % Type.AnimationFrames], null, Type.Palette);
         }
         internal bool Tick()
         {
@@ -81,6 +79,13 @@ namespace DemoRogue.Entities
             _position = position;
             _isActive = true;
 
+            // Calculate some stuff
+            _sector = _position / Dungeon.SECTOR_TILE_AREA;
+            _chunk = _position / (Dungeon.GridWidth, Dungeon.GridHeight);
+
+            // Bind to the chunk
+            Dungeon.GetChunk(_chunk).BindEntity(Id);
+
             // Update the tilemap
             // TODO: Only update tilemap if visisble :)
             UpdateSprite();
@@ -92,11 +97,11 @@ namespace DemoRogue.Entities
         {
             _isActive = false;
         }
-        
+
         public void SetPosition(Point8 position)
         {
             // Update the tilemap
-            Game.Tilemap.Set(_position, 1, 0);
+            Game.Tilemap.Set(_position, LayerIndex.Tilemap1, 0);
 
             _position = position;
 
@@ -104,6 +109,14 @@ namespace DemoRogue.Entities
             _sector = _position / Dungeon.SECTOR_TILE_AREA;
             if (oldSector != _sector)
                 SectorChanged?.Invoke(new(this, _sector, oldSector));
+
+            Point8 oldChunk = _chunk;
+            _chunk = _position / (Dungeon.ChunkTileWidth, Dungeon.ChunkTileHeight);
+            if (oldChunk != _chunk)
+            {
+                Dungeon.GetChunk(oldChunk).UnbindEntity(Id);
+                Dungeon.GetChunk(_chunk).BindEntity(Id);
+            }
 
             UpdateSprite();
         }

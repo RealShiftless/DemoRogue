@@ -2,11 +2,6 @@
 using DemoRogue.World.Generation;
 using DemoRogue.World.Rooms.Types;
 using Shiftless.Common.Registration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DemoRogue
 {
@@ -27,10 +22,12 @@ namespace DemoRogue
     public sealed class EntityTypeContainer
     {
         public readonly PlayerType Player;
+        public readonly SlimeType Slime;
 
         internal EntityTypeContainer(RegistryBuilder registry)
         {
             Player = registry.Register("entities.player", new PlayerType());
+            Slime = registry.Register("entities.slime", new SlimeType());
         }
     }
 

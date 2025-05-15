@@ -20,7 +20,7 @@ namespace DemoRogue.Entities.Types
         // Properties
         public int AnimationFrames => AnimationFrameIndices.Length;
 
-        
+
         // Func
         public abstract void Load(Game game);
 

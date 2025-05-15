@@ -1,14 +1,9 @@
 ﻿using DemoRogue.Entities;
+using DemoRogue.Scenes;
 using DemoRogue.World.Building;
-using DemoRogue.World.Generation;
 using Shiftless.Clockwork.Retro.Mathematics;
 using Shiftless.Clockwork.Retro.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+using Shiftless.Common.Mathematics;
 
 namespace DemoRogue.World
 {
@@ -21,7 +16,7 @@ namespace DemoRogue.World
         public const int SECTOR_TILE_AREA = 4;
         public const int SECTOR_SIZE = SECTOR_TILE_AREA * SECTOR_TILE_AREA;
 
-        public const int SECTORS_X = WIDTH  / SECTOR_TILE_AREA;
+        public const int SECTORS_X = WIDTH / SECTOR_TILE_AREA;
         public const int SECTORS_Y = HEIGHT / SECTOR_TILE_AREA;
 
         public const int SECTOR_PIXEL_AREA = SECTOR_TILE_AREA * Tileset.TILE_PIXEL_AREA;
@@ -41,7 +36,7 @@ namespace DemoRogue.World
 
 
         // Values
-        public readonly Game Game;
+        public readonly DungeonScene Scene;
 
         public readonly EntityManager Entities;
 
@@ -57,6 +52,8 @@ namespace DemoRogue.World
 
 
         // Properties
+        public Game Game => Scene.Game;
+
         public int GridWidth => _chunks.GetLength(0);
         public int GridHeight => _chunks.GetLength(1);
 
@@ -65,9 +62,9 @@ namespace DemoRogue.World
 
 
         // Constructor
-        public Dungeon(Game game)
+        public Dungeon(DungeonScene scene)
         {
-            Game = game;
+            Scene = scene;
 
             Entities = new(this);
             _builder = new(this, 6, 6);
@@ -164,7 +161,7 @@ namespace DemoRogue.World
         public bool IsTileAir(int x, int y)
         {
             // First we check if we are out of range, if so we return false
-            if(x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
+            if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
                 return false;
 
             // We get the packed x, because we have 8 tiles per byte, we devide by 8
@@ -198,7 +195,7 @@ namespace DemoRogue.World
         internal void BuildSector(int x, int y, int tX, int tY, Tilemap tilemap)
         {
             bool fillZero = x < 0 || x >= SECTORS_X || y < 0 || y >= SECTORS_Y;
-            
+
             int worldX = x * SECTOR_TILE_AREA;
             int worldY = y * SECTOR_TILE_AREA;
 
@@ -214,16 +211,16 @@ namespace DemoRogue.World
 
                     if (fillZero || IsTileAir(worldX + localX, worldY + localY))
                     {
-                        tilemap.Set(tileMapX, tileMapY, 0, 0, 0, fillZero ? PaletteIndex.Palette0 : PaletteIndex.Palette1);
+                        tilemap.Set(tileMapX, tileMapY, 0, 0, 0, fillZero ? Game.DUNGEON_PALETTE_1 : Game.DUNGEON_PALETTE_2);
                         continue;
                     }
 
                     (byte texture, TileTransform transform) = GetTileState(layerX, layerY);
 
-                    tilemap.Set(tileMapX, tileMapY, 0, texture, transform, PaletteIndex.Palette0);
+                    tilemap.Set(tileMapX, tileMapY, 0, texture, transform, Game.DUNGEON_PALETTE_1);
                 }
             }
-            
+
         }
 
         private (byte, TileTransform) GetTileState(int x, int y)

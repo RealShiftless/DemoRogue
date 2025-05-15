@@ -1,23 +1,37 @@
-﻿using DemoRogue.States;
+﻿using DemoRogue.Scenes;
 using DemoRogue.Util;
 using DemoRogue.World;
-using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Shiftless.Clockwork.Retro;
 using Shiftless.Clockwork.Retro.Mathematics;
 using Shiftless.Common.Registration;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DemoRogue
 {
     public sealed class Game : GameBase
     {
+        // Palette Constants
+        public const PaletteIndex DUNGEON_PALETTE_1 = PaletteIndex.Palette0;
+        public const PaletteIndex DUNGEON_PALETTE_2 = PaletteIndex.Palette1;
+
+        public const PaletteIndex PLAYER_PALETTE = PaletteIndex.Palette2;
+
+        public const PaletteIndex AQUA_PALETTE_1 = PaletteIndex.Palette3;
+        public const PaletteIndex AQUA_PALETTE_2 = PaletteIndex.Palette4;
+
+        public const PaletteIndex TERA_PALETTE_1 = PaletteIndex.Palette5;
+        public const PaletteIndex TERA_PALETTE_2 = PaletteIndex.Palette6;
+
+        public const PaletteIndex PYRA_PALETTE_1 = PaletteIndex.Palette7;
+        public const PaletteIndex PYRA_PALETTE_2 = PaletteIndex.Palette8;
+
+        public const PaletteIndex FONT_PALETTE = PaletteIndex.Palette15;
+
+
+        // Texture Unit Constants
+
+
+
         // This basically just stores the ascii values for the supported characters by the sprite font [A-Z0-9@]
         private Registrar _registrar = null!;
         private Registry _registry = null!;
@@ -65,7 +79,7 @@ namespace DemoRogue
                 64
             ];
 
-        private GameState _gameState;
+        private Scene _gameState;
 
 
         // Properties
@@ -76,7 +90,7 @@ namespace DemoRogue
         // Constructor
         public Game() : base(new() { WindowTitle = "Demo Rogue" })
         {
-            _gameState = new DungeonState();
+            _gameState = new DungeonScene();
         }
 
 
@@ -103,31 +117,40 @@ namespace DemoRogue
             Input.Right = Keys.Right;
 
             // Set some palletes
-            Renderer.SetPalette(PaletteIndex.Palette0, new(
+            Renderer.SetPalette(DUNGEON_PALETTE_1, new(
                 new(),
-                new(0x6110a2FF),
-                new(0x9241f3FF),
-                new(0xa271ffFF)));
+                new(0x6110a2),
+                new(0x9241f3),
+                new(0xa271ff)));
 
-            Renderer.SetPalette(PaletteIndex.Palette1, new(
-                new(0x3c0a64FF),
-                new(0x6110a2FF),
-                new(0x9241f3FF),
-                new(0xa271ffFF)));
+            Renderer.SetPalette(DUNGEON_PALETTE_2, new(
+                new(0x3c0a64),
+                new(0x6110a2),
+                new(0x9241f3),
+                new(0xa271ff)));
 
-            Renderer.SetPalette(PaletteIndex.Palette2, new(
-                new(0xFF00FFFF),
-                new(0x6110a2FF),
-                new(0xff61b2FF),
-                new(0xffcbbaFF)
+            Renderer.SetPalette(PLAYER_PALETTE, new(
+                new(0xFF00FF),
+                new(0x6110a2),
+                new(0xff61b2),
+                new(0xffcbba)
                 ));
 
-            Renderer.SetPalette(PaletteIndex.Palette3, new(
-                new(0xFF00FFFF),
-                new(0xFF00FFFF),
-                new(0xFF00FFFF),
-                new(0xffffffFF)
+            Renderer.SetPalette(AQUA_PALETTE_2, new(
+                new(0xFF00FF),
+                new(0x2000b2),
+                new(0x4161fb),
+                new(0x92d3ff)
                 ));
+
+            Renderer.SetPalette(FONT_PALETTE, new(
+                new(0xFF00FF),
+                new(0xFF00FF),
+                new(0xFF00FF),
+                new(0xffffff)
+                ));
+
+
 
             // Initialize the registrar
             _registrar = new((registrar) =>
@@ -162,19 +185,17 @@ namespace DemoRogue
             _gameState.Tick();
         }
 
-        public void WriteString(string str, byte x, byte y, byte layer, byte clearLength = 2)
+        public void WriteString(string str, byte x, byte y, LayerIndex layer, byte clearLength = 2)
         {
-            for(int i = 0; i < str.Length + clearLength; i++)
+            for (int i = 0; i < str.Length + clearLength; i++)
                 Tilemap.SetTile((byte)(x + i), y, layer, 0);
 
             for (int i = 0; i < str.Length; i++)
             {
                 byte c = (byte)str[i];
                 Tilemap.SetTile((byte)(x + i), y, layer, c);
-                Tilemap.Set((byte)(x + i), y, layer, c, null, PaletteIndex.Palette3);
+                Tilemap.Set((byte)(x + i), y, layer, c, null, FONT_PALETTE);
             }
-
-            
         }
     }
 }

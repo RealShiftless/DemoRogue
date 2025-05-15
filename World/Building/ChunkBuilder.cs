@@ -1,5 +1,6 @@
 ﻿using DemoRogue.World.Rooms;
 using Shiftless.Clockwork.Retro.Mathematics;
+using Shiftless.Common.Mathematics;
 
 namespace DemoRogue.World.Building
 {
@@ -48,12 +49,12 @@ namespace DemoRogue.World.Building
         internal void AddPath(byte pathIndex, Point8? destChunk = null, bool leadsToSource = false)
         {
             _paths.Add(pathIndex);
-            if(destChunk != null)
+            if (destChunk != null)
                 _pathRooms.Add(destChunk.Value);
-            
+
             // If we are not already leading to the source (0,0) we set it to the leads to source bool given.
             // This way we can easily check if this chunk leads to the source
-            if(leadsToSource)
+            if (leadsToSource)
                 SetLeadsToSource();
         }
 
