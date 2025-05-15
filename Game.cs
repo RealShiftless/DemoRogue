@@ -1,4 +1,5 @@
-﻿using DemoRogue.Scenes;
+﻿using DemoRogue.Registration;
+using DemoRogue.Scenes;
 using DemoRogue.Util;
 using DemoRogue.World;
 using OpenTK.Windowing.GraphicsLibraryFramework;
