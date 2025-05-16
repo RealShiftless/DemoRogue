@@ -1,4 +1,5 @@
-﻿using Shiftless.Clockwork.Retro.Mathematics;
+﻿using OpenTK.Windowing.GraphicsLibraryFramework;
+using Shiftless.Clockwork.Retro.Mathematics;
 using Shiftless.Clockwork.Retro.Rendering;
 using Shiftless.Common.Mathematics;
 
@@ -42,21 +43,23 @@ namespace DemoRogue.Entities.Types
         {
             Vec2i input = new(entity.Game.Input.HorizontalI, entity.Game.Input.VerticalI);
 
-            if (input != Vec2i.Zero && (_moveTimer == 0 || entity.Game.Window.KeyboardState.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftShift)))
+            if (input != Vec2i.Zero && (_moveTimer == 0 || entity.Game.Window.KeyboardState.IsKeyDown(Keys.LeftShift)))
             {
                 Point8 nextPos = entity.Position + input;
 
-                /*
-                if(input.X != 0 && input.Y != 0)
+                if(!entity.Game.Window.KeyboardState.IsKeyDown(Keys.Space))
                 {
-                    if (!entity.Dungeon.IsTileOpen(nextPos.X, entity.Position.Y) || !entity.Dungeon.IsTileOpen(entity.Position.X, nextPos.Y) || !entity.Dungeon.IsTileOpen(nextPos))
+                    if (input.X != 0 && input.Y != 0)
+                    {
+                        if (!entity.Dungeon.IsTileOpen(nextPos.X, entity.Position.Y) || !entity.Dungeon.IsTileOpen(entity.Position.X, nextPos.Y) || !entity.Dungeon.IsTileOpen(nextPos))
+                            return;
+                    }
+                    else if (!entity.Dungeon.IsTileOpen(nextPos))
+                    {
                         return;
+                    }
                 }
-                else if(!entity.Dungeon.IsTileOpen(nextPos))
-                {
-                    return;
-                }
-                */
+                
 
                 // Update the players position
                 entity.SetPosition(nextPos);
